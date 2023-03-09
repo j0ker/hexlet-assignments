@@ -72,10 +72,10 @@ class Web::UsersController < Web::ApplicationController
 
   # BEGIN
   def users_csv_enumerator
-    @csv_enumerator ||= Enumerator.new do |yielder|
+    @users_csv_enumerator ||= Enumerator.new do |yielder|
       yielder << CSV.generate_line(User.column_names)
       User.find_each do |row|
-        yielder << CSV.generate_line(row.attributes.map { | k, v| v } )
+        yielder << CSV.generate_line(row.attributes.map { |k, v| v })
       end
     end
   end
