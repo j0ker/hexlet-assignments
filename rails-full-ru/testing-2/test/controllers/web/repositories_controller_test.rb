@@ -4,20 +4,22 @@ require 'test_helper'
 
 class Web::RepositoriesControllerTest < ActionDispatch::IntegrationTest
   # BEGIN
-  setup do
-    @response_body = load_fixture('files/response.json')
-    @link = 'https://github.com/j0ker/first_app'
-    stub_request(:get, 'https://api.github.com/repos/j0ker/first_app').
-      with(headers: {
-            'Accept'=>'application/vnd.github.v3+json', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'Content-Type'=>'application/json', 'User-Agent'=>'Octokit Ruby Gem 4.25.1'
-        }).to_return(status: 200, body: @response_body, headers: {})
-  end
-
   test 'should create repository' do
-    post repositories_url, params: { repository: { link: @link } }
-    repository = Repository.find_by(link: @response_body['html_url'])
-    assert_redirected_to repository_path(repository)
+    repo_url = 'https://github.com/octocat/Hello-World'
+    mock_url = 'https://api.github.com/repos/octocat/Hello-World'
+    response = load_fixture('files/response.json')
+    stub_request(:get, mock_url)
+      .to_return(
+        body: response, status: 200, headers: { content_type: 'application/json' }
+      )
+
+    repository_params = { link: repo_url }
+    post repositories_path params: { repository: repository_params }
+
+    created_repository = Repository.find_by(repository_params)
+
+    assert created_repository
+    assert_redirected_to repositories_path
   end
   # END
 end
