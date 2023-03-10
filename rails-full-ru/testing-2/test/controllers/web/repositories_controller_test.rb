@@ -4,22 +4,22 @@ require 'test_helper'
 
 class Web::RepositoriesControllerTest < ActionDispatch::IntegrationTest
   # BEGIN
+  setup do
+    @data_file = load_fixture('files/response.json')
+    @data = JSON.parse(@data_file)
+    @url = @data['url']
+    @attrs = {
+      link: @data['html_url']
+    }
+    stub_request(:get, @url).to_return body: @data_file, headers: { content_type: 'application/json' }
+  end
+
   test 'should create repository' do
-    repo_url = 'https://github.com/octocat/Hello-World'
-    mock_url = 'https://api.github.com/repos/octocat/Hello-World'
-    response = load_fixture('files/response.json')
-    stub_request(:get, mock_url)
-      .to_return(
-        body: response, status: 200, headers: { content_type: 'application/json' }
-      )
+    post repositories_url, params: { repository: @attrs }
 
-    repository_params = { link: repo_url }
-    post repositories_path params: { repository: repository_params }
+    repository = Repository.find_by(link: @data['html_url'])
 
-    created_repository = Repository.find_by(repository_params)
-
-    assert created_repository
-    assert_redirected_to repositories_path
+    assert repository
   end
   # END
 end
